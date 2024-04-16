@@ -1,63 +1,52 @@
-require('dotenv').config();
 const express = require('express');
+const app = express();
+const port = 3000;
 const cors = require('cors');
 
-const app = express();
-
-// Arithmetic functions
-function isPrime(number) {
-  if (number < 2) return false;
-  for (let i = 2; i <= Math.sqrt(number); i++) {
-    if (number % i === 0) return false;
-  }
-  return true;
-}
-
-function add(n, m) {
-  return n + m;
-}
-
-// Express setup
-if (!process.env.PORT) {
-  throw new Error('Please specify the port number for the HTTP server with the environment variable PORT.');
-}
-const port = process.env.PORT;
-
-app.use(cors());
-app.use(express.static(__dirname));
+app.use(express.json())
+app.use(cors())
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+    res.send('Arithmatic Service - Hello World!');
 });
 
 app.get('/add/:n/:m', (req, res) => {
-  const result = Number(req.params.n) + Number(req.params.m);
-  res.json({ sum: result });
+    const num1 = parseInt(req.params.n);
+    const num2 = parseInt(req.params.m);
+    const sum = num1 + num2;
+    res.json(sum);
 });
 
-app.get('/isPrime/:number', (req, res) => {
-  const number = parseInt(req.params.number, 10);
-  const isPrimeResult = isPrime(number);
-  res.json({ 
-    number: number,
-    isPrime: isPrimeResult,
-    message: isPrimeResult ? `${number} is a prime number.` : `${number} is not a prime number.`
-  });
+app.get('/isprime/:n', (req, res) => {
+    result = ''
+    const num = parseInt(req.params.n);
+    const isPrime = checkPrime(num);
+    if(isPrime) {
+        result = 'Prime';
+    }
+    else{
+        result = 'Not Prime'
+    }
+    res.json(result);
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+function checkPrime(num) {
+    if (num <= 1) {
+        return false;
+    }
+    if (num <= 3) {
+        return true;
+    }
+    if (num % 2 === 0 || num % 3 === 0) {
+        return false;
+    }
+    for (let i = 5; i * i <= num; i += 6) {
+        if (num % i === 0 || num % (i + 2) === 0) {
+            return false;
+        }
+    }
+    return true;
+}
 
-// Test cases
-test('2 + 3 is equal to 5', () => {
-  expect(add(2, 3)).toBe(5);
-});
-
-test('6 + 9 is equal to 15', () => {
-  expect(add(6, 9)).toBe(15);
-});
-
-test('67823567823568 + 3265823957 is equal to 5', () => {
-  expect(add(2000, 15)).toBe(2015);
-});
+//listening port
+app.listen(port);
