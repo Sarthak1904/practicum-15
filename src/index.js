@@ -1,20 +1,53 @@
+require('dotenv').config()
 const express = require('express');
 const app = express();
-const port = 3000;
 const cors = require('cors');
+const path = require('path');
 
-app.use(express.json())
-app.use(cors())
+const publicDirectoryPath = path.join(__dirname, '../');
+
+if (!process.env.PORT) {
+  throw new Error('Please specify the port number for the HTTP server with the environment variable PORT.');
+  }
+  const port = process.env.PORT;
+  app.get('/', (req, res) => {
+  res.send('Arithmetic service - last updated 3/4/2022');
+  });
+  
+
+
+app.use(cors());
+
+app.use(express.static(publicDirectoryPath));
 
 app.get('/', (req, res) => {
-    res.send('Arithmatic Service - Hello World!');
+  res.sendFile(path.join(publicDirectoryPath, 'index.html'));
 });
 
 app.get('/add/:n/:m', (req, res) => {
-    const num1 = parseInt(req.params.n);
-    const num2 = parseInt(req.params.m);
-    const sum = num1 + num2;
-    res.json(sum);
+  const result = Number(req.params.n) + Number(req.params.m);
+  res.json({ sum: result });
 });
-//listening port
-app.listen(port);
+
+// Prime number check endpoint
+app.get('/isPrime/:number', (req, res) => {
+  const number = parseInt(req.params.number, 10);
+  const isPrimeResult = isPrime(number);
+  res.json({ 
+    number: number,
+    isPrime: isPrimeResult,
+    message: isPrimeResult ? `${number} is a prime number.` : `${number} is not a prime number.`
+  });
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+function isPrime(number) {
+  if (number < 2) return false;
+  for (let i = 2; i <= Math.sqrt(number); i++) {
+    if (number % i === 0) return false;
+  }
+  return true;
+}
